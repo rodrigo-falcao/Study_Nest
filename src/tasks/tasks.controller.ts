@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Put } from '@nestjs/common';
 import { TasksService } from './tasks.service';
+import { TaskEntity } from './entities/task.entity';
 
 @Controller('tasks')
 export class TasksController {
@@ -11,7 +12,7 @@ export class TasksController {
   }
 
   @Get(':id')
-  getTaskById(@Param('id') id: string): { id: number; title: string; description: string } {
+  getTaskById(@Param('id') id: string): TaskEntity {
     const task = this.tasksService.findOneTaskById(Number(id));
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
@@ -30,7 +31,6 @@ export class TasksController {
 
   @Put(':id')
   updateTask(@Param('id') id: string, @Body() body: any) {
-    console.log('body recebido:', body);
     if (!body || !body.title || !body.description) {
       throw new NotFoundException('Title and description are required');
     }
