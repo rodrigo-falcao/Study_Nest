@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { TaskEntity } from './entities/task.entity';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -37,20 +38,27 @@ export class TasksService {
     return newTask;
   }
 
-  updateTask(id: number, body: any): TaskEntity {
+  updateTask(id: number, body: UpdateTaskDto): TaskEntity {
     const task = this.findOneTaskById(id);
+    if (!body.title || !body.description || body.completed === undefined) {
+      throw new HttpException('Title, description and completed status are required', HttpStatus.BAD_REQUEST);
+    }
     task.title = body.title;
     task.description = body.description;
+    task.completed = body.completed;
     return task;
   }
 
-  partialUpdateTask(id: number, body: any): TaskEntity {
+  partialUpdateTask(id: number, body: UpdateTaskDto): TaskEntity {
     const task = this.findOneTaskById(id);
     if (body.title) {
       task.title = body.title;
     }
     if (body.description) {
       task.description = body.description;
+    }
+    if (body.completed !== undefined) {
+      task.completed = body.completed;
     }
     return task;
   }

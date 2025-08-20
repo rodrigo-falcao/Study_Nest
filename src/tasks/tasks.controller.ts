@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Put } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TaskEntity } from './entities/task.entity';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -17,17 +19,17 @@ export class TasksController {
   }
 
   @Post()
-  createTasks(@Body() body: any) {
+  createTasks(@Body() body: CreateTaskDto) {
     return this.tasksService.createTask(body.title, body.description);
   }
 
   @Put(':id')
-  updateTask(@Param('id') id: string, @Body() body: any) {
+  updateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
     return this.tasksService.updateTask(Number(id), body);
   }
 
   @Patch(':id')
-  partialUpdateTask(@Param('id') id: string, @Body() body: any) {
+  partialUpdateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
     return this.tasksService.partialUpdateTask(Number(id), body);
   }
 
