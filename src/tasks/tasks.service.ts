@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { TaskEntity } from './entities/task.entity';
-import { error } from 'console';
 
 @Injectable()
 export class TasksService {
@@ -14,17 +13,19 @@ export class TasksService {
     return this.tasks;
   }
 
-  findOneTaskById(id: number): TaskEntity | undefined {
-    const idNum = this.tasks.find(task => task.id === id);
-    if (!idNum) {
-        console.error('Task not found');
-        return undefined;
+  findOneTaskById(id: number): TaskEntity  {
+    const task = this.tasks.find(task => task.id === id);
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
     }
-    return idNum;
+    return task;
   }
 
   createTask(title: string, description: string): TaskEntity {
     const tasks = this.findAllTasks();
+    if (!title || !description) {
+      throw new HttpException('Title and description are required', HttpStatus.BAD_REQUEST);
+    }
     const newTask = {
       id: tasks.length + 1,
       title,
@@ -36,36 +37,30 @@ export class TasksService {
     return newTask;
   }
 
-  updateTask(id: number, title: string, description: string): { id: number; title: string; description: string } | undefined {
+  updateTask(id: number, title: string, description: string): TaskEntity {
     const task = this.findOneTaskById(id);
-    if (task) {
+    task.title = title;
+    task.description = description;
+    return task;
+  }
+
+  partialUpdateTask(id: number, title?: string, description?: string): TaskEntity {
+    const task = this.findOneTaskById(id);
+    if (title) {
       task.title = title;
+    }
+    if (description) {
       task.description = description;
-      return task;
     }
-    return undefined;
+    return task;
   }
 
-  partialUpdateTask(id: number, title?: string, description?: string): { id: number; title: string; description: string } | undefined {
-    const task = this.findOneTaskById(id);
-    if (task) {
-      if (title) {
-        task.title = title;
-      }
-      if (description) {
-        task.description = description;
-      }
-      return task;
-    }
-    return undefined;
-  }
-
-  deleteTask(id: number): boolean {
+  deleteTask(id: number): { message: string } {
     const taskIndex = this.tasks.findIndex(task => task.id === id);
     if (taskIndex !== -1) {
       this.tasks.splice(taskIndex, 1);
-      return true;
+      return { message: `Task com ID ${id} foi excluída com sucesso!` };
     }
-    return false;
+    throw new NotFoundException(`Task with ID ${id} not found`);
   }
 }

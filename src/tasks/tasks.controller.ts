@@ -13,51 +13,29 @@ export class TasksController {
 
   @Get(':id')
   getTaskById(@Param('id') id: string): TaskEntity {
-    const task = this.tasksService.findOneTaskById(Number(id));
-    if (!task) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-    return task;
+    return this.tasksService.findOneTaskById(Number(id));
   }
 
   @Post()
   createTasks(@Body() Body: any) {
     const { title, description } = Body;
-    if (!title || !description) {
-      throw new NotFoundException('Title and description are required');
-    }
     return this.tasksService.createTask(title, description);
   }
 
   @Put(':id')
   updateTask(@Param('id') id: string, @Body() body: any) {
-    if (!body || !body.title || !body.description) {
-      throw new NotFoundException('Title and description are required');
-    }
     const { title, description } = body;
-    const updatedTask = this.tasksService.updateTask(Number(id), title, description);
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-    return updatedTask;
+    return this.tasksService.updateTask(Number(id), title, description);
   }
 
   @Patch(':id')
   partialUpdateTask(@Param('id') id: string, @Body() Body: any) {
     const { title, description } = Body;
-    const updatedTask = this.tasksService.partialUpdateTask(Number(id), title, description);
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-    return updatedTask;
+    return this.tasksService.partialUpdateTask(Number(id), title, description);
   }
 
   @Delete(':id')
   deleteTask(@Param('id') id: string) {
-    const deleted = this.tasksService.deleteTask(Number(id));
-    if (!deleted) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
-    }
-    return { message: `Task with ID ${id} deleted successfully` };
+    return this.tasksService.deleteTask(Number(id));
   }
 }
