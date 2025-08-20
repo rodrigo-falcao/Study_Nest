@@ -37,20 +37,20 @@ export class TasksService {
     return newTask;
   }
 
-  updateTask(id: number, title: string, description: string): TaskEntity {
+  updateTask(id: number, body: any): TaskEntity {
     const task = this.findOneTaskById(id);
-    task.title = title;
-    task.description = description;
+    task.title = body.title;
+    task.description = body.description;
     return task;
   }
 
-  partialUpdateTask(id: number, title?: string, description?: string): TaskEntity {
+  partialUpdateTask(id: number, body: any): TaskEntity {
     const task = this.findOneTaskById(id);
-    if (title) {
-      task.title = title;
+    if (body.title) {
+      task.title = body.title;
     }
-    if (description) {
-      task.description = description;
+    if (body.description) {
+      task.description = body.description;
     }
     return task;
   }
@@ -61,6 +61,6 @@ export class TasksService {
       this.tasks.splice(taskIndex, 1);
       return { message: `Task com ID ${id} foi excluída com sucesso!` };
     }
-    throw new NotFoundException(`Task with ID ${id} not found`);
+    throw new HttpException(`Task with ID ${id} not found`, HttpStatus.NOT_FOUND);
   }
 }

@@ -17,21 +17,18 @@ export class TasksController {
   }
 
   @Post()
-  createTasks(@Body() Body: any) {
-    const { title, description } = Body;
-    return this.tasksService.createTask(title, description);
+  createTasks(@Body() body: any) {
+    return this.tasksService.createTask(body.title, body.description);
   }
 
   @Put(':id')
   updateTask(@Param('id') id: string, @Body() body: any) {
-    const { title, description } = body;
-    return this.tasksService.updateTask(Number(id), title, description);
+    return this.tasksService.updateTask(Number(id), body);
   }
 
   @Patch(':id')
-  partialUpdateTask(@Param('id') id: string, @Body() Body: any) {
-    const { title, description } = Body;
-    return this.tasksService.partialUpdateTask(Number(id), title, description);
+  partialUpdateTask(@Param('id') id: string, @Body() body: any) {
+    return this.tasksService.partialUpdateTask(Number(id), body);
   }
 
   @Delete(':id')
