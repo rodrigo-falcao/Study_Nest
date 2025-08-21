@@ -33,7 +33,7 @@ export class TasksService {
     return newTask;
   }
 
-  async updateTask(id: number, body: UpdateTaskDto): Promise<TaskEntity> {
+  async updateTotalTask(id: number, body: UpdateTaskDto): Promise<TaskEntity> {
     if (!body.title || !body.description || body.completed === undefined) {
       throw new HttpException('Title, description and completed status are required', HttpStatus.BAD_REQUEST);
     }
@@ -61,8 +61,14 @@ export class TasksService {
 }
 
   async deleteTask(id: number): Promise<{ message: string }> {
-    await this.findOneTaskById(id);
-    await this.prisma.tasks.delete({ where: { id } });
-    return { message: `Task com ID ${id} foi excluída com sucesso!` };
+    try {
+      await this.prisma.tasks.delete({ where: { id } });
+      return { message: `Task com ID ${id} foi excluída com sucesso!` };
+    } catch (error: any) {
+        if (error.code === 'P2025') { 
+        throw new HttpException(`Task with ID ${id} not found`, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(`Error deleting task with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

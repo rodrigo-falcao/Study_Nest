@@ -25,7 +25,7 @@ export class TasksController {
 
   @Put(':id')
   updateTask(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTaskDto): Promise<TaskEntity> {
-    return this.tasksService.updateTask(id, body);
+    return this.tasksService.updateTotalTask(id, body);
   }
 
   @Patch(':id')
