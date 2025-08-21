@@ -2,13 +2,22 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskEntity } from './entities/task.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async findAllTasks() {
-    return await this.prisma.tasks.findMany();
+  async findAllTasks(PaginationDto?: PaginationDto) {
+    const { limit = 10, page = 1 } = PaginationDto || {};
+    const offset = (page - 1) * limit;
+    return await this.prisma.tasks.findMany({
+      take: limit,
+      skip: offset,
+      orderBy: { 
+        createdAt: 'desc' 
+      },
+    });
   }
 
   async findOneTaskById(id: number): Promise<TaskEntity> {
