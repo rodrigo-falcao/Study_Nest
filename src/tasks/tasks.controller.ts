@@ -1,21 +1,23 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { TaskEntity } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { LoggerInterceptor } from 'src/common/interceptors/logger.interceptor';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAllTasks(@Query() PaginationDto: PaginationDto) {
+  @UseInterceptors(LoggerInterceptor)
+  findAllTasks(@Query() PaginationDto: PaginationDto): Promise<TaskEntity[]> {
     return this.tasksService.findAllTasks(PaginationDto);
   }
 
   @Get(':id')
-  getTaskById(@Param('id', ParseIntPipe) id: number) {
+  getTaskById(@Param('id', ParseIntPipe) id: number): Promise<TaskEntity> {
     return this.tasksService.findOneTaskById(id);
   }
 
@@ -25,12 +27,12 @@ export class TasksController {
   }
 
   @Put(':id')
-  updateTask(@Param('id', ParseIntPipe) id: number, @Body() UpdateTaskDto) {
+  updateTask(@Param('id', ParseIntPipe) id: number, @Body() UpdateTaskDto: UpdateTaskDto) {
     return this.tasksService.updateTotalTask(id, UpdateTaskDto);
   }
 
   @Patch(':id')
-  partialUpdateTask(@Param('id', ParseIntPipe) id: number, @Body() UpdateTaskDto) {
+  partialUpdateTask(@Param('id', ParseIntPipe) id: number, @Body() UpdateTaskDto: UpdateTaskDto) {
     return this.tasksService.partialUpdateTask(id, UpdateTaskDto);
   }
 
