@@ -62,8 +62,8 @@ export class TasksService {
     return task;
   }
 
-  deleteTask(id: string): { message: string } {
-    const taskIndex = this.tasks.findIndex(task => task.id === Number(id));
+  deleteTask(id: number): { message: string } {
+    const taskIndex = this.tasks.findIndex(task => task.id === id);
     if (taskIndex !== -1) {
       this.tasks.splice(taskIndex, 1);
       return { message: `Task com ID ${id} foi excluída com sucesso!` };

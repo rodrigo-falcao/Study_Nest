@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TaskEntity } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -14,8 +14,8 @@ export class TasksController {
   }
 
   @Get(':id')
-  getTaskById(@Param('id') id: string): TaskEntity {
-    return this.tasksService.findOneTaskById(Number(id));
+  getTaskById(@Param('id', ParseIntPipe) id: number): TaskEntity {
+    return this.tasksService.findOneTaskById(id);
   }
 
   @Post()
@@ -24,17 +24,17 @@ export class TasksController {
   }
 
   @Put(':id')
-  updateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
-    return this.tasksService.updateTask(Number(id), body);
+  updateTask(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTaskDto) {
+    return this.tasksService.updateTask(id, body);
   }
 
   @Patch(':id')
-  partialUpdateTask(@Param('id') id: string, @Body() body: UpdateTaskDto) {
-    return this.tasksService.partialUpdateTask(Number(id), body);
+  partialUpdateTask(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTaskDto) {
+    return this.tasksService.partialUpdateTask(id, body);
   }
 
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
+  deleteTask(@Param('id', ParseIntPipe) id: number) {
     return this.tasksService.deleteTask(id);
   }
 }
