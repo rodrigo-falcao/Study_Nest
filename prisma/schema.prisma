@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  // output   = "../generated/prisma"
+  // está comentado para a pasta ser criada na pasta padrão client
 }
 
 datasource db {

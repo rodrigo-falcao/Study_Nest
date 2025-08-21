@@ -9,22 +9,22 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAllTasks(): Array<{ id: number; title: string; description: string }> {
+  findAllTasks(): Promise<Array<{ id: number; title: string; description: string }>> {
     return this.tasksService.findAllTasks();
   }
 
   @Get(':id')
-  getTaskById(@Param('id', ParseIntPipe) id: number): TaskEntity {
+  getTaskById(@Param('id', ParseIntPipe) id: number): Promise<TaskEntity> {
     return this.tasksService.findOneTaskById(id);
   }
 
   @Post()
-  createTasks(@Body() body: CreateTaskDto) {
+  createTasks(@Body() body: CreateTaskDto): Promise<TaskEntity> {
     return this.tasksService.createTask(body.title, body.description);
   }
 
   @Put(':id')
-  updateTask(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTaskDto) {
+  updateTask(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateTaskDto): Promise<TaskEntity> {
     return this.tasksService.updateTask(id, body);
   }
 
