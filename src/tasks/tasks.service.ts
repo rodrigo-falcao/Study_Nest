@@ -13,10 +13,7 @@ export class TasksService {
     const offset = (page - 1) * limit;
     return await this.prisma.tasks.findMany({
       take: limit,
-      skip: offset,
-      orderBy: { 
-        createdAt: 'desc' 
-      },
+      skip: offset
     });
   }
 

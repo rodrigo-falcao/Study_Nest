@@ -5,13 +5,15 @@ import { TaskEntity } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { LoggerInterceptor } from 'src/common/interceptors/logger.interceptor';
+import { BodyCreateTaskInterceptor } from 'src/common/interceptors/body-create-task.interceptor';
+import { AddHeaderInterceptor } from 'src/common/interceptors/add-header.intereceptor';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  @UseInterceptors(LoggerInterceptor)
+  @UseInterceptors(LoggerInterceptor, AddHeaderInterceptor)
   findAllTasks(@Query() PaginationDto: PaginationDto): Promise<TaskEntity[]> {
     return this.tasksService.findAllTasks(PaginationDto);
   }
@@ -22,6 +24,7 @@ export class TasksController {
   }
 
   @Post()
+  @UseInterceptors(BodyCreateTaskInterceptor)
   createTasks(@Body() body: CreateTaskDto) {
     return this.tasksService.createTask(body.title, body.description);
   }
