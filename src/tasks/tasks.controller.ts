@@ -14,19 +14,19 @@ export class TasksController {
 
   @Get()
   @UseInterceptors(LoggerInterceptor, AddHeaderInterceptor)
-  findAllTasks(@Query() PaginationDto: PaginationDto): Promise<TaskEntity[]> {
+  findAllTasks(@Query() PaginationDto: PaginationDto) {
     return this.tasksService.findAllTasks(PaginationDto);
   }
 
   @Get(':id')
-  getTaskById(@Param('id', ParseIntPipe) id: number): Promise<TaskEntity> {
+  getTaskById(@Param('id', ParseIntPipe) id: number) {
     return this.tasksService.findOneTaskById(id);
   }
 
   @Post()
   @UseInterceptors(BodyCreateTaskInterceptor)
-  createTasks(@Body() body: CreateTaskDto) {
-    return this.tasksService.createTask(body.title, body.description);
+  createTasks(@Body() CreateTaskDto: CreateTaskDto) {
+    return this.tasksService.createTask(CreateTaskDto);
   }
 
   @Put(':id')

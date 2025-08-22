@@ -3,5 +3,6 @@ export interface TaskEntity {
   title: string;
   description: string;
   completed: boolean;
+  userId: number | null; 
   createdAt?: Date | null;
 }

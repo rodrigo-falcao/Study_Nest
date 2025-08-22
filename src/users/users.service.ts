@@ -42,6 +42,7 @@ export class UsersService {
         id: true,
         email: true,
         name: true,
+        tasks: true
       }
     });
     if (!user) {
@@ -51,6 +52,9 @@ export class UsersService {
   }
 
   async updateUser(id:number, updateUserDto: UpdateUserDto) {
+    if (!updateUserDto.name || !updateUserDto.email || !updateUserDto.password) {
+      throw new HttpException('All fields (name, email, password) must be provided for update', HttpStatus.BAD_REQUEST);
+    }
     try {
       const user = await this.prisma.users.update({
         where: { id },
@@ -73,12 +77,15 @@ export class UsersService {
 
   async partialUpdateUser(id: number, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.prisma.users.update({
+      const user = await this.prisma.users.findUnique({ where: { id } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const updatedUser = await this.prisma.users.update({
         where: { id },
         data: {
-          name: updateUserDto?.name,
-          email: updateUserDto?.email,
-          passwordHash: updateUserDto?.password,
+          name: updateUserDto.name ? updateUserDto.name : user.name,
+          passwordHash: updateUserDto?.password ? updateUserDto.password : user.passwordHash,
         },
         select: {
           id: true,
@@ -86,7 +93,7 @@ export class UsersService {
           name: true,
         }
       });
-      return user;
+      return updatedUser;
     } catch (error) {
       throw new HttpException('Error updating user', HttpStatus.INTERNAL_SERVER_ERROR);
     }

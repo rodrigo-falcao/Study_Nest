@@ -3,12 +3,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskEntity } from './entities/task.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async findAllTasks(PaginationDto?: PaginationDto) {
+  async findAllTasks(PaginationDto?: PaginationDto): Promise<TaskEntity[]> {
     const { limit = 10, page = 1 } = PaginationDto || {};
     const offset = (page - 1) * limit;
     return await this.prisma.tasks.findMany({
@@ -25,15 +26,16 @@ export class TasksService {
     return task;
   }
 
-  async createTask(title: string, description: string): Promise<TaskEntity> {
-    if (!title || !description) {
+  async createTask(CreateTaskDto: CreateTaskDto): Promise<TaskEntity> {
+    if (!CreateTaskDto.title || !CreateTaskDto.description) {
       throw new HttpException('Title and description are required', HttpStatus.BAD_REQUEST);
     }
     try {
       const newTask = await this.prisma.tasks.create({
         data: {
-          title,
-          description,
+          title: CreateTaskDto.title,
+          description: CreateTaskDto.description,
+          userId: CreateTaskDto.userId,
           completed: false,
         },
       });
@@ -66,6 +68,7 @@ export class TasksService {
       title: body.title ?? task.title,
       description: body.description ?? task.description,
       completed: body.completed ?? task.completed,
+      userId: body.userId ?? task.userId ?? null,
     },
   });
 }
