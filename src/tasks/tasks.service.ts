@@ -29,14 +29,18 @@ export class TasksService {
     if (!title || !description) {
       throw new HttpException('Title and description are required', HttpStatus.BAD_REQUEST);
     }
-    const newTask = await this.prisma.tasks.create({
-      data: {
-        title,
-        description,
-        completed: false,
-      },
-    });
-    return newTask;
+    try {
+      const newTask = await this.prisma.tasks.create({
+        data: {
+          title,
+          description,
+          completed: false,
+        },
+      });
+      return newTask;
+    } catch (error) {
+      throw new HttpException('Error creating task', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async updateTotalTask(id: number, body: UpdateTaskDto): Promise<TaskEntity> {
