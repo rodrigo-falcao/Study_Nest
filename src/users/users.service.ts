@@ -2,10 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { HashingServiceProtocol } from 'src/auth/hash/hashing.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly authService: HashingServiceProtocol,
+  ) {}
 
   async createUser(createUserDto: CreateUserDto) {
     try {
@@ -13,7 +17,7 @@ export class UsersService {
         data: {
           name: createUserDto.name,
           email: createUserDto.email,
-          passwordHash: createUserDto.password,
+          passwordHash: await this.authService.hash(createUserDto.password),
         },
         select: {
           id: true,
@@ -61,7 +65,7 @@ export class UsersService {
         data: {
           name: updateUserDto.name,
           email: updateUserDto.email,
-          passwordHash: updateUserDto.password,
+          passwordHash: await this.authService.hash(updateUserDto.password),
         },
         select: {
           id: true,
@@ -85,7 +89,7 @@ export class UsersService {
         where: { id },
         data: {
           name: updateUserDto.name ? updateUserDto.name : user.name,
-          passwordHash: updateUserDto?.password ? updateUserDto.password : user.passwordHash,
+          passwordHash: updateUserDto?.password ? await this.authService.hash(updateUserDto.password) : user.passwordHash,
         },
         select: {
           id: true,

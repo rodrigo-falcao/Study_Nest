@@ -14,7 +14,6 @@ export class UsersController {
 
   @Get()
   findAllUsers() {
-    console.log('Token Test', process.env.TOKEN_KEY);
     return this.usersService.findAllUsers();
   }
 
