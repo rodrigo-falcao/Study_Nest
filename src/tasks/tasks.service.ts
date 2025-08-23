@@ -1,9 +1,9 @@
+import { CreateTaskDto } from './dto/create-task.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskEntity } from './entities/task.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -60,18 +60,18 @@ export class TasksService {
     });
   }
 
-  async partialUpdateTask(id: number, body: UpdateTaskDto): Promise<TaskEntity> {
+  async partialUpdateTask(id: number, updateTaskDto: UpdateTaskDto): Promise<TaskEntity> {
     const task = await this.findOneTaskById(id);
     return await this.prisma.tasks.update({
-    where: { id },
-    data: {
-      title: body.title ?? task.title,
-      description: body.description ?? task.description,
-      completed: body.completed ?? task.completed,
-      userId: body.userId ?? task.userId ?? null,
-    },
-  });
-}
+      where: { id },
+      data: {
+        title: updateTaskDto.title ?? task.title,
+        description: updateTaskDto.description ?? task.description,
+        completed: updateTaskDto.completed ?? task.completed,
+        userId: updateTaskDto.userId ?? task.userId ?? null,
+      },
+    });
+  }
 
   async deleteTask(id: number): Promise<{ message: string }> {
     try {
