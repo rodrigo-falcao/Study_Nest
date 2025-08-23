@@ -1,7 +1,10 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthTokenGuards } from 'src/auth/guards/auth.guards';
+import { Request } from 'express';
+import { REQUEST_TOKEN_PAYLOAD_NAME } from 'src/auth/commom/auth.constants';
 
 @Controller('users')
 export class UsersController {
@@ -12,8 +15,9 @@ export class UsersController {
     return this.usersService.createUser(createUserDto)
   }
 
+  @UseGuards(AuthTokenGuards)
   @Get()
-  findAllUsers() {
+  findAllUsers(@Req() req: Request) {
     return this.usersService.findAllUsers();
   }
 
@@ -23,7 +27,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto ) {
     return this.usersService.updateUser(id, updateUserDto);
   }
 

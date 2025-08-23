@@ -17,7 +17,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) { }
 
-  async authenticate(signInDto: SignInDto): Promise<string> {
+  async authenticate(signInDto: SignInDto) {
     const user = await this.prisma.users.findUnique({
       where: { email: signInDto.email },
     });
@@ -48,7 +48,11 @@ export class AuthService {
       }
     );
 
-    return token;
-
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      token: token,
+    };
   }
 }
