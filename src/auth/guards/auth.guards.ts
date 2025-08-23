@@ -1,14 +1,16 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import jwtConfig from "../config/jwt.config";
 import { ConfigType } from "@nestjs/config";
 import { REQUEST_TOKEN_PAYLOAD_NAME } from "../commom/auth.constants";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
 export class AuthTokenGuards implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
 
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
@@ -25,6 +27,15 @@ export class AuthTokenGuards implements CanActivate {
     try {
       const payload = await this.jwtService.verifyAsync(token, this.jwtConfiguration);
       request[REQUEST_TOKEN_PAYLOAD_NAME] = payload;
+      const user = await this.prisma.users.findUnique({
+        where: { id: payload?.id }
+      });
+      if (!user) {
+        throw new HttpException('User or password not found', HttpStatus.UNAUTHORIZED);
+      }
+      if (!user.active) {
+        throw new UnauthorizedException('User is inactive');
+      }
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
