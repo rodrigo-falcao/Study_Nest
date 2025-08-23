@@ -8,7 +8,6 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { TaskEntity } from './entities/task.entity';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AuthGuard } from 'src/common/guards/admin.guard';
 
 @Controller('tasks')
 @UseFilters(ApiExceptionFilter)
