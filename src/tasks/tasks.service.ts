@@ -4,6 +4,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskEntity } from './entities/task.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
 
 @Injectable()
 export class TasksService {
@@ -26,7 +27,7 @@ export class TasksService {
     return task;
   }
 
-  async createTask(CreateTaskDto: CreateTaskDto): Promise<TaskEntity> {
+  async createTask(CreateTaskDto: CreateTaskDto, tokenPayload: PayloadTokenDto): Promise<TaskEntity> {
     if (!CreateTaskDto.title || !CreateTaskDto.description) {
       throw new HttpException('Title and description are required', HttpStatus.BAD_REQUEST);
     }
@@ -35,8 +36,8 @@ export class TasksService {
         data: {
           title: CreateTaskDto.title,
           description: CreateTaskDto.description,
-          userId: CreateTaskDto.userId,
           completed: false,
+          userId: tokenPayload.id
         },
       });
       return newTask;
@@ -45,35 +46,33 @@ export class TasksService {
     }
   }
 
-  async updateTotalTask(id: number, body: UpdateTaskDto): Promise<TaskEntity> {
-    if (!body.title || !body.description || body.completed === undefined) {
-      throw new HttpException('Title, description and completed status are required', HttpStatus.BAD_REQUEST);
+  async partialUpdateTask(id: number, updateTaskDto: UpdateTaskDto, tokenPayload: PayloadTokenDto) {
+    console.log('Token Payload:', tokenPayload);
+    if (!tokenPayload) {
+      throw new HttpException('Token payload não recebido', HttpStatus.FORBIDDEN);
     }
-    await this.findOneTaskById(id);
-    return await this.prisma.tasks.update({
-      where: { id },
-      data: {
-        title: body.title,
-        description: body.description,
-        completed: body.completed,
-      },
-    });
-  }
-
-  async partialUpdateTask(id: number, updateTaskDto: UpdateTaskDto): Promise<TaskEntity> {
     const task = await this.findOneTaskById(id);
+    if (task.userId !== tokenPayload.id) {
+      throw new HttpException('You are not allowed to update this task', HttpStatus.FORBIDDEN);
+    }
     return await this.prisma.tasks.update({
       where: { id },
       data: {
         title: updateTaskDto.title ?? task.title,
         description: updateTaskDto.description ?? task.description,
-        completed: updateTaskDto.completed ?? task.completed,
-        userId: updateTaskDto.userId ?? task.userId ?? null,
+        completed: updateTaskDto.completed ?? task.completed
       },
     });
   }
 
-  async deleteTask(id: number): Promise<{ message: string }> {
+  async deleteTask(id: number, tokenPayload: PayloadTokenDto): Promise<{ message: string }> {
+    if (!tokenPayload) {
+      throw new HttpException('Token payload não recebido', HttpStatus.FORBIDDEN);
+    }
+    const task = await this.findOneTaskById(id);
+    if (task.userId !== tokenPayload.id) {
+      throw new HttpException('You are not allowed to delete this task', HttpStatus.FORBIDDEN);
+    }
     try {
       await this.prisma.tasks.delete({ where: { id } });
       return { message: `Task com ID ${id} foi excluída com sucesso!` };

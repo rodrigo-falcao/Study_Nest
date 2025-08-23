@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { HashingServiceProtocol } from 'src/auth/hash/hashing.service';
+import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
 
 @Injectable()
 export class UsersService {
@@ -79,11 +80,14 @@ export class UsersService {
     }
   }
 
-  async partialUpdateUser(id: number, updateUserDto: UpdateUserDto) {
+  async partialUpdateUser(id: number, updateUserDto: UpdateUserDto, tokenPayload: PayloadTokenDto) {
     try {
       const user = await this.prisma.users.findUnique({ where: { id } });
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      if (user.id !== tokenPayload.id) {
+        throw new HttpException('You are not allowed to update this user', HttpStatus.FORBIDDEN);
       }
       const updatedUser = await this.prisma.users.update({
         where: { id },
@@ -103,8 +107,15 @@ export class UsersService {
     }
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number, tokenPayload: PayloadTokenDto) {
     try {
+      const user = await this.prisma.users.findUnique({ where: { id } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      if (user.id !== tokenPayload.id) {
+        throw new HttpException('You are not allowed to delete this user', HttpStatus.FORBIDDEN);
+      }
       await this.prisma.users.delete({
         where: { id }
       });

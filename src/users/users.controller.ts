@@ -1,10 +1,10 @@
+import { AuthTokenGuards } from 'src/auth/guards/auth.guards';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-users.dto';
-import { UsersService } from './users.service';
+import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
+import { TokenPayloadParam } from 'src/param/token-payload.param';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthTokenGuards } from 'src/auth/guards/auth.guards';
-import { Request } from 'express';
-import { REQUEST_TOKEN_PAYLOAD_NAME } from 'src/auth/commom/auth.constants';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -15,9 +15,8 @@ export class UsersController {
     return this.usersService.createUser(createUserDto)
   }
 
-  @UseGuards(AuthTokenGuards)
   @Get()
-  findAllUsers(@Req() req: Request) {
+  findAllUsers() {
     return this.usersService.findAllUsers();
   }
 
@@ -27,17 +26,29 @@ export class UsersController {
   }
 
   @Put(':id')
-  updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto ) {
+  updateUser(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() updateUserDto: UpdateUserDto
+  ) {
     return this.usersService.updateUser(id, updateUserDto);
   }
 
+  @UseGuards(AuthTokenGuards)
   @Patch(':id')
-  updatePartialUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.partialUpdateUser(id, updateUserDto);
+  updatePartialUser(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() updateUserDto: UpdateUserDto,
+    @TokenPayloadParam() tokenPayload: PayloadTokenDto
+  ) {
+    return this.usersService.partialUpdateUser(id, updateUserDto, tokenPayload);
   }
 
+  @UseGuards(AuthTokenGuards)
   @Delete(':id')
-  deleteUser(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.deleteUser(id);
+  deleteUser(
+    @Param('id', ParseIntPipe) id: number, 
+    @TokenPayloadParam() tokenPayload: PayloadTokenDto
+  ) {
+    return this.usersService.deleteUser(id, tokenPayload);
   }
 }
