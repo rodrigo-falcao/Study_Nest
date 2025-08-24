@@ -1,10 +1,13 @@
 import { AuthTokenGuards } from 'src/auth/guards/auth.guards';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder, ParseIntPipe, Patch, Post, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-users.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
+import { promises as fs } from 'fs';
 import { TokenPayloadParam } from 'src/param/token-payload.param';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
+import * as path from 'path';
 
 @Controller('users')
 export class UsersController {
@@ -50,5 +53,33 @@ export class UsersController {
     @TokenPayloadParam() tokenPayload: PayloadTokenDto
   ) {
     return this.usersService.deleteUser(id, tokenPayload);
+  }
+
+  @UseGuards(AuthTokenGuards)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('upload')
+  async uploadAvatar(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jpg|jpeg|png|gif)$/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 1024 * 1024 * 50,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    ) file: Express.Multer.File,
+    @TokenPayloadParam() tokenPayload: PayloadTokenDto
+  ) {
+    // const mimeType = file.mimetype;
+    const fileExtension = path.extname(file.originalname).toLowerCase().substring(1);
+
+    const fileName = `${tokenPayload.id}.${fileExtension}`;
+    const fileLocation = path.resolve(process.cwd(), 'uploadsFiles', fileName);
+    await fs.writeFile(fileLocation, file.buffer);
+
+    return true
   }
 }

@@ -7,6 +7,8 @@ import { LoggerMiddleware } from 'src/common/middlewares/logger.middleware';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { TasksModule } from 'src/tasks/tasks.module';
 import { UsersModule } from 'src/users/users.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'node:path';
 
 @Module({
   imports: [
@@ -14,6 +16,10 @@ import { UsersModule } from 'src/users/users.module';
     ConfigModule.forRoot(),
     TasksModule, 
     UsersModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploadsFiles'),
+      serveRoot: '/files/',
+    }),
   ],
   controllers: [AppController],
   providers: [

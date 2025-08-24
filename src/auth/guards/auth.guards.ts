@@ -52,3 +52,5 @@ export class AuthTokenGuards implements CanActivate {
     return authorizationHeader.split(" ")[1];
   }
 }
+
+
