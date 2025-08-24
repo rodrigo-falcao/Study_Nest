@@ -1,9 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-users.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { HashingServiceProtocol } from 'src/auth/hash/hashing.service';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { promises as fs } from 'fs';
+import { UpdateUserDto } from './dto/update-user.dto';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
@@ -122,6 +124,27 @@ export class UsersService {
       return { message: `User with ID ${id} deleted successfully` };
     } catch (error) {
       throw new HttpException(`Error deleting user ${id}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async uploadAvatar(file: Express.Multer.File, tokenPayload: PayloadTokenDto) {
+    try{
+      const mimeType = file.mimetype;
+      const fileExtension = path.extname(file.originalname).toLowerCase().substring(1);
+      const fileName = `${tokenPayload.id}.${fileExtension}`;
+      const fileLocation = path.resolve(process.cwd(), 'uploadsFiles', fileName);
+      await fs.writeFile(fileLocation, file.buffer);
+
+      const user = await this.prisma.users.findUnique({ where: { id: tokenPayload.id } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const updatedUser = await this.prisma.users.update({ where: { id: user.id }, data: { avatar: fileName }, select: { id: true, name: true, email: true, avatar: true } });
+
+      return updatedUser;
+    }catch(err) {
+      console.error(err);
+      throw new HttpException('Error uploading avatar', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

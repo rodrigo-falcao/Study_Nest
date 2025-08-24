@@ -25,6 +25,7 @@ model Users {
   passwordHash    String
   email           String @unique
   active          Boolean @default(true)
+  avatar          String?
 
   tasks           Tasks[]
   createdAt       DateTime? @default(now())

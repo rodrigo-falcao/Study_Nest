@@ -3,11 +3,9 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder,
 import { CreateUserDto } from './dto/create-users.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PayloadTokenDto } from 'src/auth/dto/payload-token.dto';
-import { promises as fs } from 'fs';
 import { TokenPayloadParam } from 'src/param/token-payload.param';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import * as path from 'path';
 
 @Controller('users')
 export class UsersController {
@@ -73,13 +71,6 @@ export class UsersController {
     ) file: Express.Multer.File,
     @TokenPayloadParam() tokenPayload: PayloadTokenDto
   ) {
-    // const mimeType = file.mimetype;
-    const fileExtension = path.extname(file.originalname).toLowerCase().substring(1);
-
-    const fileName = `${tokenPayload.id}.${fileExtension}`;
-    const fileLocation = path.resolve(process.cwd(), 'uploadsFiles', fileName);
-    await fs.writeFile(fileLocation, file.buffer);
-
-    return true
+    return this.usersService.uploadAvatar(file, tokenPayload);
   }
 }
